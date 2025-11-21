@@ -833,23 +833,19 @@ Brief description of what Cerberus does and why it exists
 - What makes it different/useful
 
 ## Installation
-```bash
 # From source
 git clone https://github.com/home-kops/cerberus
 cd cerberus
 python -m venv venv
 source venv/bin/activate
 pip install -e .
-```
 
 ## Quick Start
-```bash
 # Basic scan
 cerberus /path/to/scan
 
 # Recursive scan with options
 cerberus /path/to/scan --recursive --format json
-```
 
 ## Usage Examples
 Common use cases with actual commands
@@ -861,6 +857,7 @@ Available options and how to configure
 How to contribute (link to CONTRIBUTING.md if needed)
 
 ## License
+Project license information (e.g., MIT, Apache 2.0)
 ```
 
 **Update README.md when:**
