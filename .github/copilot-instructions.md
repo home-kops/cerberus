@@ -123,15 +123,15 @@ class TestHashScanner:
     def scanner(self):
         malware_hashes = {"44d88612fea8a8f36de82e1278abb02f"}  # Known bad hash
         return HashScanner(malware_hashes)
-    
+
     def test_scan_detects_malicious_hash(self, scanner, tmp_path):
         # Arrange
         malicious_file = tmp_path / "bad.exe"
         malicious_file.write_text("X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR")
-        
+
         # Act
         result = scanner.scan(malicious_file)
-        
+
         # Assert
         assert result.risk_level == RiskLevel.HIGH
         assert "hash match" in result.reason.lower()
@@ -177,29 +177,29 @@ class TestHashScannerPerformance:
             file_path.write_bytes(b'A' * size)
             files[name] = file_path
         return files
-    
+
     def test_hash_small_file(self, benchmark, test_files):
         """Benchmark hash calculation for 1KB file."""
         result = benchmark(calculate_hash_streaming, test_files['small'])
         assert len(result) == 64  # SHA256 hex length
-    
+
     def test_hash_large_file(self, benchmark, test_files):
         """Benchmark hash calculation for 100MB file."""
         result = benchmark(calculate_hash_streaming, test_files['xlarge'])
         assert len(result) == 64
-    
+
     def test_scanner_throughput(self, benchmark, test_files, tmp_path):
         """Measure files scanned per second."""
         scanner = HashScanner(set())
-        
+
         # Create 100 small files
         files = [tmp_path / f"file_{i}.txt" for i in range(100)]
         for f in files:
             f.write_bytes(b'test content')
-        
+
         def scan_batch():
             return [scanner.scan(f) for f in files]
-        
+
         results = benchmark(scan_batch)
         assert len(results) == 100
 ```
@@ -254,9 +254,9 @@ def memory_monitor():
     """Monitor memory usage during test."""
     process = psutil.Process(os.getpid())
     baseline = process.memory_info().rss / (1024 * 1024)  # MB
-    
+
     yield baseline
-    
+
     final = process.memory_info().rss / (1024 * 1024)
     delta = final - baseline
     if delta > 100:  # Alert if memory increased by >100MB
@@ -333,11 +333,11 @@ def scan_patterns_chunked(file_path: Path, patterns: List[bytes]) -> bool:
     for chunk in read_chunks(file_path):
         # Combine overlap from previous chunk
         searchable = previous_tail + chunk
-        
+
         for pattern in patterns:
             if pattern in searchable:
                 return True
-        
+
         # Keep tail for next iteration
         previous_tail = chunk[-OVERLAP_SIZE:] if len(chunk) >= OVERLAP_SIZE else chunk
     return False
@@ -355,13 +355,13 @@ def analyze_file_structure(file_path: Path) -> dict:
     file_size = file_path.stat().st_size
     with open(file_path, 'rb') as f:
         header = f.read(1024 * 1024)  # First 1MB
-        
+
         if file_size > 2 * 1024 * 1024:
             f.seek(-1024 * 1024, 2)  # Seek to last 1MB
             footer = f.read()
         else:
             footer = b""
-    
+
     return analyze_bytes(header, footer)
 ```
 
@@ -377,11 +377,11 @@ def scan_with_progress(file_path: Path) -> ScanResult:
     """Show progress for files larger than threshold."""
     file_size = file_path.stat().st_size
     LARGE_FILE_THRESHOLD = 100 * 1024 * 1024  # 100MB
-    
+
     if file_size > LARGE_FILE_THRESHOLD:
         logger.info(f"Scanning large file: {file_path.name} ({file_size / (1024**3):.2f} GB)")
         # Implement progress callback
-    
+
     return perform_scan(file_path)
 ```
 
@@ -500,7 +500,7 @@ jobs:
           pylint src/cerberus/
       - name: Type check
         run: mypy src/cerberus/ --strict
-  
+
   # Job 2: Security (parallel with quality)
   security:
     runs-on: ubuntu-latest
@@ -514,7 +514,7 @@ jobs:
         run: |
           bandit -r src/ -ll
           pip-audit
-  
+
   # Job 3: Tests (multiple Python versions)
   test:
     runs-on: ubuntu-latest
@@ -540,7 +540,7 @@ jobs:
         if: matrix.python-version == '3.13'
         with:
           file: ./coverage.xml
-  
+
   # Job 4: Benchmarks (only on PR, compare to main)
   benchmark:
     runs-on: ubuntu-latest
@@ -554,14 +554,14 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
       - run: pip install -e . -r requirements-dev.txt
-      
+
       # Benchmark current PR
       - name: Run benchmarks (PR)
         run: |
           pytest tests/benchmarks/ \
             --benchmark-only \
             --benchmark-json=pr-bench.json
-      
+
       # Checkout main and benchmark
       - name: Checkout main
         run: git checkout main
@@ -571,7 +571,7 @@ jobs:
           pytest tests/benchmarks/ \
             --benchmark-only \
             --benchmark-json=main-bench.json
-      
+
       # Compare and fail if >10% regression
       - name: Compare benchmarks
         run: |
@@ -589,18 +589,18 @@ repos:
     rev: 23.12.1
     hooks:
       - id: black
-  
+
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
       - id: isort
-  
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.1.9
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
-  
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
@@ -609,7 +609,7 @@ repos:
       - id: check-yaml
       - id: check-added-large-files
         args: ['--maxkb=500']
-  
+
   - repo: local
     hooks:
       - id: pytest-fast
@@ -904,18 +904,18 @@ Use docstrings for all public functions/classes (Google style):
 ```python
 def scan_file(path: Path, scanners: List[Scanner]) -> ScanResult:
     """Scan a file using provided scanners and aggregate results.
-    
+
     Args:
         path: Absolute path to the file to scan.
         scanners: List of scanner instances to use for analysis.
-        
+
     Returns:
         ScanResult containing aggregated risk assessment and findings.
-        
+
     Raises:
         FileNotFoundError: If the specified file doesn't exist.
         PermissionError: If the file cannot be read.
-        
+
     Example:
         >>> result = scan_file(Path("/tmp/test.exe"), [hash_scanner])
         >>> print(result.risk_level)
@@ -954,7 +954,7 @@ Before merging any PR, verify:
 docs-check:
 	# Check for missing docstrings
 	interrogate src/cerberus/ --fail-under=100 -vv
-	
+
 	# Validate README has required sections
 	grep -q "## Installation" README.md
 	grep -q "## Quick Start" README.md
