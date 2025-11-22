@@ -5,10 +5,10 @@ a database of known malicious file hashes.
 """
 
 import hashlib
+import os
 from pathlib import Path
 
-from cerberus.core.scan_result import ScanResult
-from cerberus.core.scanner import Scanner
+from cerberus.core import RiskLevel, Scanner, ScanResult
 from cerberus.utils import read_chunks
 
 
@@ -51,6 +51,9 @@ class HashScanner(Scanner):
                 f"Supported: {', '.join(hashlib.algorithms_available)}"
             )
 
+        self.malware_hashes = malware_hashes
+        self.hash_algorithm = hash_algorithm
+
     @property
     def name(self) -> str:
         return __class__.__name__
@@ -75,8 +78,29 @@ class HashScanner(Scanner):
             3. Compare against known malware hashes
             4. Return appropriate risk level and details
         """
-        # TODO: Implement
-        pass
+        if file_path.is_dir():
+            raise IsADirectoryError
+
+        if not file_path.is_file():
+            raise FileNotFoundError
+
+        if not os.access(file_path, os.R_OK):
+            raise PermissionError
+
+        file_hash = self._calculate_hash(file_path, self.hash_algorithm)
+
+        if file_hash in self.malware_hashes:
+            return ScanResult(
+                file_path,
+                RiskLevel.CRITICAL,
+                "File hash matches malware",
+                self.name,
+                {"hash": file_hash},
+            )
+
+        return ScanResult(
+            file_path, RiskLevel.SAFE, "Safe", self.name, {"hash": file_hash}
+        )
 
     def _calculate_hash(self, file_path: Path, hash_algorithm: str) -> str:
         """Calculate file hash using streaming for memory efficiency.
