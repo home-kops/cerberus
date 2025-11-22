@@ -111,23 +111,11 @@ class HashScanner(Scanner):
         Returns:
             Hexadecimal string representation of the hash.
 
-        Raises:
-            FileNotFoundError: If the file does not exist.
-            PermissionError: If the file cannot be read due to permissions.
-            IsADirectoryError: If the provided path is a directory.
-            ValueError: If an unsupported hash algorithm is specified.
-
         Note:
             Uses 64KB chunks to balance I/O efficiency with memory usage.
             Suitable for files of any size from bytes to multiple GB.
         """
-        try:
-            hasher = hashlib.new(hash_algorithm)
-        except ValueError as exc:
-            raise ValueError(
-                f"Unsupported hash algorithm: {hash_algorithm}. "
-                f"Supported: {', '.join(hashlib.algorithms_available)}"
-            ) from exc
+        hasher = hashlib.new(hash_algorithm)
 
         for chunk in read_chunks(file_path):
             hasher.update(chunk)

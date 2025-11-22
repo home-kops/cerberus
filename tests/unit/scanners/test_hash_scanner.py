@@ -93,6 +93,14 @@ class TestHashScannerScan:
         with pytest.raises(IsADirectoryError):
             scanner.scan(tmp_path)
 
+    def test_scan_file_with_no_read_permission_raises_error(self, test_file):
+        """Test scanning a non readable file raises permissions error."""
+        test_file.chmod(0o333)
+        scanner = HashScanner(set())
+
+        with pytest.raises(PermissionError):
+            scanner.scan(test_file)
+
     def test_scan_result_contains_hash_details(self, test_file):
         """Test scan result includes hash in details."""
         scanner = HashScanner(set())
