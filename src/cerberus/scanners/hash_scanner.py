@@ -42,14 +42,18 @@ class HashScanner(Scanner):
             ValueError: If hash_algorithm is not supported.
             TypeError: If malware_hashes is not a set.
         """
-        # TODO: Implement initialization
-        pass
+        if not isinstance(malware_hashes, set):
+            raise TypeError("malware_hashes is not a set")
+
+        if hash_algorithm not in (hashlib.algorithms_available):
+            raise ValueError(
+                f"Unsupported hash algorithm: {hash_algorithm}. "
+                f"Supported: {', '.join(hashlib.algorithms_available)}"
+            )
 
     @property
     def name(self) -> str:
-        """Return scanner name."""
-        # TODO: Implement
-        pass
+        return __class__.__name__
 
     def scan(self, file_path: Path) -> ScanResult:
         """Scan file by comparing hash against known malware database.
@@ -74,7 +78,7 @@ class HashScanner(Scanner):
         # TODO: Implement
         pass
 
-    def _calculate_hash(self, file_path: Path) -> str:
+    def _calculate_hash(self, file_path: Path, hash_algorithm: str) -> str:
         """Calculate file hash using streaming for memory efficiency.
 
         Args:
@@ -94,10 +98,10 @@ class HashScanner(Scanner):
             Suitable for files of any size from bytes to multiple GB.
         """
         try:
-            hasher = hashlib.new(self.hash_algorithm)
+            hasher = hashlib.new(hash_algorithm)
         except ValueError as exc:
             raise ValueError(
-                f"Unsupported hash algorithm: {self.hash_algorithm}. "
+                f"Unsupported hash algorithm: {hash_algorithm}. "
                 f"Supported: {', '.join(hashlib.algorithms_available)}"
             ) from exc
 

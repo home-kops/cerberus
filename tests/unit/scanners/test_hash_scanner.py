@@ -29,6 +29,11 @@ class TestHashScannerInitialization:
         with pytest.raises(TypeError):
             HashScanner(["hash1", "hash2"])  # List instead of set
 
+    def test_init_with_invalid_hash_algorithm(self):
+        """Test initialization with non-set type raises TypeError."""
+        with pytest.raises(ValueError):
+            HashScanner({"hash1"}, "not_a_hash_algorithm")
+
     def test_name_property(self):
         """Test scanner name property."""
         scanner = HashScanner(set())
