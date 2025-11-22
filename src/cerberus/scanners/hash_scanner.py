@@ -56,7 +56,7 @@ class HashScanner(Scanner):
 
     @property
     def name(self) -> str:
-        return __class__.__name__
+        return "HashScanner"
 
     def scan(self, file_path: Path) -> ScanResult:
         """Scan file by comparing hash against known malware database.
